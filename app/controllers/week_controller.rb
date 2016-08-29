@@ -16,7 +16,14 @@ class WeekController < ApplicationController
     doc = Nokogiri::HTML(open(url))
 
     parse_calendar(doc,cal,tzid)
+    2.times do
+      next_id = parse_next_day(doc)
+      next_url = "#{url}#{next_id}"
 
+      doc = Nokogiri::HTML(open(next_url))
+      parse_calendar(doc,cal,tzid)
+      puts "+++ next_url #{next_url}"
+    end
     render plain: cal.to_ical
   end
 
@@ -37,7 +44,10 @@ def course_should_be_included(course_label)
   "Step","bodyART","Tabata","deepWork","Cross Train", "Capo Fit"]
   ignore.none?{|i| Regexp.new(i).match(course_label)}
 end
-
+def parse_next_day(doc)
+  element = doc.css("div.headerNextDay")
+  nextdayid = element.attribute("data-next-day").value
+end
 def parse_calendar(doc,cal,tzid)
   year = Date.today.year.to_s
   dates = []

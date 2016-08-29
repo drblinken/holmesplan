@@ -1,4 +1,6 @@
 class WeekController < ApplicationController
+
+
   def courses
     require 'icalendar/tzinfo'
 
@@ -28,6 +30,14 @@ def parse_time_and_duration(time_and_duration)
   puts "++++ Duration not found" unless match[2]
   return start_time, minutes
 end
+
+def course_should_be_included(course_label)
+  ignore = ["Kids Swim", "Jumpin", "BODYPUMP", "Boxin", "Krav", "Body Shape",
+  "BODYBALANCE","Les Mills","Zumba","Indoor Cyclin","Ballet","Cardio Workou",
+  "Step","bodyART","Tabata","deepWork","Cross Train", "Capo Fit"]
+  ignore.none?{|i| Regexp.new(i).match(course_label)}
+end
+
 def parse_calendar(doc,cal,tzid)
   year = Date.today.year.to_s
   dates = []
@@ -72,13 +82,15 @@ def parse_calendar(doc,cal,tzid)
         puts "end_time:   #{end_time.inspect}"
         course_label = course.css("span.timetableProgramLabel").text
         puts "course #{course_label}"
-        cal.event do |e|
-          e.dtstart = Icalendar::Values::DateTime.new start_time, 'tzid' => tzid
-          e.dtend   = Icalendar::Values::DateTime.new end_time, 'tzid' => tzid
-          e.summary = course_label
-          #e.description = "Have a long lunch meeting and decide nothing..."
-          #e.organizer = "mailto:jsmith@example.com"
-          #e.organizer = Icalendar::Values::CalAddress.new("mailto:jsmith@example.com", cn: 'John Smith')
+        if course_should_be_included(course_label)
+          cal.event do |e|
+            e.dtstart = Icalendar::Values::DateTime.new start_time, 'tzid' => tzid
+            e.dtend   = Icalendar::Values::DateTime.new end_time, 'tzid' => tzid
+            e.summary = course_label
+            #e.description = "Have a long lunch meeting and decide nothing..."
+            #e.organizer = "mailto:jsmith@example.com"
+            #e.organizer = Icalendar::Values::CalAddress.new("mailto:jsmith@example.com", cn: 'John Smith')
+         end
         end
       end
     end

@@ -16,28 +16,19 @@ class WeekController < ApplicationController
     doc = course_plan.doc
     url = CoursePlan.url
 
-    parse_calendar(doc,cal,tzid)
-    2.times do
-      next_id = parse_next_day(doc)
-      next_url = "#{url}#{next_id}"
-
-      doc = Nokogiri::HTML(open(next_url))
-      parse_calendar(doc,cal,tzid)
+    parse_calendar(course_plan,cal,tzid)
+    3.times do
+      next_url = "#{url}#{course_plan.next_day_id}"
       logger.debug "+++ next_url #{next_url}"
+      course_plan = CoursePlan.new(next_url)
+      parse_calendar(course_plan,cal,tzid)
     end
     render plain: cal.to_ical
   end
 
 private
 
-def parse_time_and_duration(time_and_duration)
-  match = /(.*) \| (\d?\d\d)'/.match(time_and_duration)
-  logger.debug "++++ Could not be parsed: #{time_and_duration}" unless match
-  start_time = match[1]
-  minutes = match[2] ? match[2].to_i : 0
-  logger.debug "++++ Duration not found" unless match[2]
-  return start_time, minutes
-end
+
 
 def course_should_be_included(course_label)
   ignore = ["Kids Swim", "Jumpin", "BODYPUMP", "Boxin", "Krav", "Body Shape",
@@ -46,12 +37,10 @@ def course_should_be_included(course_label)
   ignore.none?{|i| Regexp.new(i).match(course_label)}
 end
 
-def parse_next_day(doc)
-  element = doc.css("div.headerNextDay")
-  nextdayid = element.attribute("data-next-day").value
-end
 
-def parse_calendar(doc,cal,tzid)
+
+def parse_calendar(course_plan,cal,tzid)
+  doc = course_plan.doc
   year = Date.today.year.to_s
   dates = []
   date_strings = []
@@ -87,7 +76,7 @@ def parse_calendar(doc,cal,tzid)
       dayColumn.css("div.timetableProgram").each do |course|
         spans = course.css("span")
         time_and_duration = spans[0].text
-        time, duration = parse_time_and_duration(time_and_duration)
+        time, duration = course_plan.parse_time_and_duration(time_and_duration)
         logger.debug "time #{time_and_duration}"
         start_time = DateTime.parse("#{date_strings[day]} #{time_and_duration}")
         end_time = start_time + (duration/1440.0)

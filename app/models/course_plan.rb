@@ -36,7 +36,7 @@ class CoursePlan
   end
 
 
-  def parse_calendar(cal,tzid,logger)
+  def parse_calendar
     year = Date.today.year.to_s
     date_strings = date_header.map do | day |
       date = select_date(day)
@@ -44,22 +44,18 @@ class CoursePlan
     end
 
     block_selectors.map do |block_selector|
-      logger.debug "++++ Starting on block #{block_selector}"
       block = doc.css(block_selector)
       day = -1
       block.css("div.dayColumn").map do | dayColumn |
         day = day + 1
         dayColumn.css()
-        #logger.debug dayColumn.class
         dayColumn.css("div.timetableProgram").map do |course|
           spans = course.css("span")
           time_and_duration = spans[0].text
           time, duration = parse_time_and_duration(time_and_duration)
-          logger.debug "time #{time_and_duration}"
           start_time = DateTime.parse("#{date_strings[day]} #{time_and_duration}")
           end_time = start_time + (duration/1440.0)
           course_label = course.css("span.timetableProgramLabel").text
-          logger.debug "course #{course_label}"
           Event.new(start_time: start_time,end_time: end_time,label: course_label)
         end
       end

@@ -13,19 +13,18 @@ class WeekController < ApplicationController
     cal.add_timezone timezone
 
     course_plan = CoursePlan.new
-    doc = course_plan.doc
     url = CoursePlan.url
 
-    events = course_plan.parse_calendar(cal,tzid,logger)
-    1.times do
+    events = course_plan.parse_calendar
+    3.times do
       next_url = "#{url}#{course_plan.next_day_id}"
       logger.debug "+++ next_url #{next_url}"
       course_plan = CoursePlan.new(next_url)
-      events.concat(course_plan.parse_calendar(cal,tzid,logger))
+      events.concat(course_plan.parse_calendar)
     end
 
     events.flatten!
-    
+
     events.each do | event |
       logger.debug "EVENT:   "+event.inspect
       if course_should_be_included(event.label)

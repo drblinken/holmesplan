@@ -12,8 +12,9 @@ class WeekController < ApplicationController
     timezone = tz.ical_timezone event_start
     cal.add_timezone timezone
 
-    url = "http://holmesplace.de/de/schedule/timetableCalendar.json_15_"
-    doc = Nokogiri::HTML(open(url))
+    course_plan = CoursePlan.new
+    doc = course_plan.doc
+    url = CoursePlan.url
 
     parse_calendar(doc,cal,tzid)
     2.times do
@@ -22,7 +23,7 @@ class WeekController < ApplicationController
 
       doc = Nokogiri::HTML(open(next_url))
       parse_calendar(doc,cal,tzid)
-      puts "+++ next_url #{next_url}"
+      logger.debug "+++ next_url #{next_url}"
     end
     render plain: cal.to_ical
   end
@@ -31,10 +32,10 @@ private
 
 def parse_time_and_duration(time_and_duration)
   match = /(.*) \| (\d?\d\d)'/.match(time_and_duration)
-  puts "++++ Could not be parsed: #{time_and_duration}" unless match
+  logger.debug "++++ Could not be parsed: #{time_and_duration}" unless match
   start_time = match[1]
   minutes = match[2] ? match[2].to_i : 0
-  puts "++++ Duration not found" unless match[2]
+  logger.debug "++++ Duration not found" unless match[2]
   return start_time, minutes
 end
 
@@ -44,10 +45,12 @@ def course_should_be_included(course_label)
   "Step","bodyART","Tabata","deepWork","Cross Train", "Capo Fit"]
   ignore.none?{|i| Regexp.new(i).match(course_label)}
 end
+
 def parse_next_day(doc)
   element = doc.css("div.headerNextDay")
   nextdayid = element.attribute("data-next-day").value
 end
+
 def parse_calendar(doc,cal,tzid)
   year = Date.today.year.to_s
   dates = []
@@ -57,41 +60,41 @@ def parse_calendar(doc,cal,tzid)
     children = day.children
     day = children[1].text
     date = children[3].text
-    puts "date #{date}"
+    logger.debug "date #{date}"
     dates << Date.parse(date)
     date_strings << "#{date} #{year}"
-    puts "day: #{day} date: #{date}"
+    logger.debug "day: #{day} date: #{date}"
   end
 
-  puts dates.inspect
-  puts date_strings.inspect
+  logger.debug dates.inspect
+  logger.debug date_strings.inspect
 
   #blocks = "div.mor".split
   #blocks = "div.aft".split
   blocks = "div.nig".split
   blocks = "div.mor, div.aft, div.nig".split(",")
-  puts "blocks: #{blocks}"
+  logger.debug "blocks: #{blocks}"
   blocks.each do |block_selector|
-    puts "++++ Starting on block #{block_selector}"
+    logger.debug "++++ Starting on block #{block_selector}"
     block = doc.css(block_selector)
-    puts "++++ this block has #{block.css("div.dayColumn").size} days"
+    logger.debug "++++ this block has #{block.css("div.dayColumn").size} days"
     day = -1
     block.css("div.dayColumn").each do | dayColumn |
       day = day + 1
-      puts "DAY: #{dates[day]}"
+      logger.debug "DAY: #{dates[day]}"
       dayColumn.css()
-      #puts dayColumn.class
+      #logger.debug dayColumn.class
       dayColumn.css("div.timetableProgram").each do |course|
         spans = course.css("span")
         time_and_duration = spans[0].text
         time, duration = parse_time_and_duration(time_and_duration)
-        puts "time #{time_and_duration}"
+        logger.debug "time #{time_and_duration}"
         start_time = DateTime.parse("#{date_strings[day]} #{time_and_duration}")
         end_time = start_time + (duration/1440.0)
-        puts "start_time: #{start_time.inspect}"
-        puts "end_time:   #{end_time.inspect}"
+        logger.debug "start_time: #{start_time.inspect}"
+        logger.debug "end_time:   #{end_time.inspect}"
         course_label = course.css("span.timetableProgramLabel").text
-        puts "course #{course_label}"
+        logger.debug "course #{course_label}"
         if course_should_be_included(course_label)
           cal.event do |e|
             e.dtstart = Icalendar::Values::DateTime.new start_time, 'tzid' => tzid

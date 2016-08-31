@@ -1,0 +1,7 @@
+<% labels.each do | label | %>
+    <div class="label_check_box">
+       <%= check_box("labels", "include", {:multiple => true}, label, nil) %>
+       <%= label_tag label %>
+       <br />
+    </div>
+<% end %>

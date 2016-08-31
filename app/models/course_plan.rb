@@ -8,7 +8,7 @@ class CoursePlan
     $URL
   end
   def doc
-    @doc || @doc = Nokogiri::HTML(open(@url))
+    @doc || @doc = Nokogiri::HTML(open(@url), nil, 'UTF-8')
   end
 
   ## HTML specific methods
@@ -39,7 +39,7 @@ class CoursePlan
   def all_course_labels
     parse_calendar.map{|e| e.label}.uniq
   end
-  
+
   def parse_calendar
     year = Date.today.year.to_s
     date_strings = date_header.map do | day |
@@ -60,7 +60,9 @@ class CoursePlan
           start_time = DateTime.parse("#{date_strings[day]} #{time_and_duration}")
           end_time = start_time + (duration/1440.0)
           course_label = course.css("span.timetableProgramLabel").text
-          Event.new(start_time: start_time,end_time: end_time,label: course_label)
+          Event.new(start_time: start_time,
+            end_time: end_time,
+            label: course_label)
         end
       end
     end

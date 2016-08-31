@@ -1,18 +1,30 @@
 <h1>StartPage#select</h1>
 <p>Find me in app/views/start_page/select.html.erb</p>
-<%= form_tag week_include_path do | f | %>
-<% left = @course_labels.slice(0,@course_labels.length/2)
-   right = @course_labels.slice(@course_labels.length/2,@course_labels.length)
-   %>
+<form action="<%= week_select_path %>" method="get">
+
+   
+   <%= radio_button_tag(:include_or_exclude, "include", selected: true) %>
+   <%= label_tag(:include, "Include below courses") %>
+   <%= radio_button_tag(:include_or_exclude, "exclude") %>
+   <%= label_tag(:exclude, "Exclude below courses") %>
+   <%= submit_tag("Get Course Plan") %>
+   
+   <% 
+      l = @course_labels.length
+      mid = l.even? ? l/2 : l/2 + 1
+      left = @course_labels.slice(0,mid)
+      right = @course_labels.slice(mid,@course_labels.length)
+      %>
    <table>
      <tr>
-       <td>
+       <td valign = "top">
          <%= render partial: "check_boxes", locals: {labels: left} %>
        </td>
-       <td>
+       <td valign = "top">
          <%= render partial: "check_boxes", locals: {labels: right} %>
        </td>
     </tr>
   </table>
 
-<% end %>
+
+</form>

@@ -19,12 +19,16 @@ class CoursePlanRealDataTest < ActiveSupport::TestCase
     assert events.any?{|e| e == Event.from_date_strings(label: "Core Xpress",
       start_time_string: "Sun, 04 Sep 2016 17:00:00 +0000",
       end_time_string: "Sun, 04 Sep 2016 17:15:00 +0000") }
+    assert events.any?{|e| e == Event.from_date_strings(label: "RÃ¼cken Fit ",
+      start_time_string: "Mon, 29 Aug 2016 09:00:00 +0000",
+      end_time_string: "Mon, 29 Aug 2016 09:50:00 +0000") }
+      #puts events.inspect
   end
 
   test "all_course_labels" do
     courses = @@course_plan.all_course_labels
     assert_equal 39, courses.length
-    assert courses.any? "Hatha Yoga"
+    assert courses.any? { |l | l == "Hatha Yoga"}
   end
 
 end

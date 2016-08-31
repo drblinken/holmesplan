@@ -36,7 +36,10 @@ class CoursePlan
     return start_time, minutes
   end
 
-
+  def all_course_labels
+    parse_calendar.map{|e| e.label}.uniq
+  end
+  
   def parse_calendar
     year = Date.today.year.to_s
     date_strings = date_header.map do | day |
@@ -44,7 +47,7 @@ class CoursePlan
       "#{date} #{year}"
     end
 
-    block_selectors.map do |block_selector|
+    events =block_selectors.map do |block_selector|
       block = doc.css(block_selector)
       day = -1
       block.css("div.dayColumn").map do | dayColumn |
@@ -61,5 +64,7 @@ class CoursePlan
         end
       end
     end
+    events.flatten
+
   end
 end

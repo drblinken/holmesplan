@@ -14,4 +14,8 @@ class HolmesCoursePlan  < Minitest::Test
     assert_equal 7, date_header.size
     assert_match /\d\d? August/,@course_plan.select_date(date_header[0])
   end
+  def test_all_courses
+    
+  end
+
 end

@@ -11,7 +11,7 @@ class CoursePlanRealDataTest < ActiveSupport::TestCase
   end
 
   test "parse calendar" do
-    events = @@course_plan.parse_calendar.flatten
+    events = @@course_plan.parse_calendar
     assert_equal 126, events.size
     assert events.any?{|e| e == Event.from_date_strings(label: "Hatha Yoga",
       start_time_string: "Wed, 31 Aug 2016 17:30:00 +0000",
@@ -20,4 +20,11 @@ class CoursePlanRealDataTest < ActiveSupport::TestCase
       start_time_string: "Sun, 04 Sep 2016 17:00:00 +0000",
       end_time_string: "Sun, 04 Sep 2016 17:15:00 +0000") }
   end
+
+  test "all_course_labels" do
+    courses = @@course_plan.all_course_labels
+    assert_equal 39, courses.length
+    assert courses.any? "Hatha Yoga"
+  end
+
 end

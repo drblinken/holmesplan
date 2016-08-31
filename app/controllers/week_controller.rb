@@ -1,5 +1,8 @@
 class WeekController < ApplicationController
 
+  def include
+    byebug
+  end
 
   def courses
     require 'icalendar/tzinfo'

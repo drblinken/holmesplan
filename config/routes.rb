@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'start_page/select'
+
   get 'week/courses'
   root 'week#courses', as: "whole_plan"
   get 'week/include'

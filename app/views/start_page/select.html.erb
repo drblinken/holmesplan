@@ -1,5 +1,11 @@
-<h1>StartPage#select</h1>
-<p>Find me in app/views/start_page/select.html.erb</p>
+<h1>HolmesPlace Calendar Exporter</h1>
+<p>This app exports the HolmesPlace course plan to vCalendar format.
+	Just select the courses you want to include or exclude, and send
+	the form. You can then copy the link from your browser and import
+	the calendar from your favourite calendar application.</p>
+	<p>You can also just <a href="<%= all_url %>">get all courses</a>. <a href="https://github.com/drblinken/holmesplan">Source on github.</a>
+</p>
+
 <form action="<%= week_select_path %>" method="get">
 
    
@@ -7,7 +13,10 @@
    <%= label_tag(:include, "Include below courses") %>
    <%= radio_button_tag(:include_or_exclude, "exclude") %>
    <%= label_tag(:exclude, "Exclude below courses") %>
-   <%= submit_tag("Get Course Plan") %>
+   <br/>
+   Get events for the next
+   <%= number_field_tag 'no_of_weeks', 3, min: 1, max: 9, class: 'no_of_weeks' %> weeks
+   <%= submit_tag("Submit") %>
    
    <% 
       l = @course_labels.length

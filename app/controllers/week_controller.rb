@@ -9,19 +9,24 @@ class WeekController < ApplicationController
     else
       exclude_labels = selected_labels
     end
-    
-    cal = fill_calendar(include_labels,exclude_labels)
+    no_of_weeks = request.params["no_of_weeks"].to_i
+    cal = fill_calendar(include_labels,exclude_labels,no_of_weeks)
 #{"utf8"=>"✓", "commit"=>"Get URL", "labels"=>{"include"=>["Schwimmtraini.", "Core Xpress", "Hatha Yoga"]}, "controller"=>"week", "action"=>"include"}
     render plain: cal.to_ical
   end
 
+
   def courses
+    cal = fill_calendar(nil,[])
+    render plain: cal.to_ical
+  end
+
+  def default
     cal = fill_calendar(nil,["Kids Swim", "Jumpin", "BODYPUMP", "Boxin", "Krav", "Body Shape",
     "BODYBALANCE","Les Mills","Zumba","Indoor Cyclin","Ballet","Cardio Workou",
     "Step","bodyART","Tabata","deepWork","Cross Train", "Capo Fit"])
     render plain: cal.to_ical
   end
-
 
   def course_should_be_included(course_label,include_labels,exclude_labels)
    if include_labels
@@ -32,7 +37,7 @@ class WeekController < ApplicationController
   end
 private 
 
-  def fill_calendar(include_labels, exclude_labels)
+  def fill_calendar(include_labels, exclude_labels, weeks = 3)
     require 'icalendar/tzinfo'
     cal = Icalendar::Calendar.new
     tzid = 'Europe/Berlin'
@@ -46,7 +51,7 @@ private
     url = CoursePlan.url
     
     events = course_plan.parse_calendar
-    0.times do
+    (weeks - 1).times do
       next_url = "#{url}#{course_plan.next_day_id}"
       logger.debug "+++ next_url #{next_url}"
       course_plan = CoursePlan.new(next_url)

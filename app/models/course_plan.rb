@@ -1,7 +1,8 @@
 class CoursePlan
   $URL = "http://holmesplace.de/de/schedule/timetableCalendar.json_15_"
-  def initialize(url = $URL)
+  def initialize(url = $URL, doc = nil)
     @url = url
+    @doc = doc
   end
   def self.url
     $URL
